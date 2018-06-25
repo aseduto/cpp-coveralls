@@ -221,12 +221,18 @@ def run_gcov(args):
                             gcov_files.append(files)
                 if re.search(r".*\.c.*", basename):
                     path = os.path.abspath(os.path.join(root, basename + '.o'))
+                    print('------GCOV re--------')
+                    print(path)
+                    print(local_gcov_options)
                     subprocess.call(
                         'cd "%s" && %s %s%s "%s"' % (
                             gcov_root, args.gcov, args.gcov_options, local_gcov_options, path),
                         shell=True)
                 else:
                     path = os.path.abspath(os.path.join(root, basename))
+                    print('------GCOV xx--------')
+                    print(path)
+                    print(local_gcov_options)
                     subprocess.call(
                         'cd "%s" && %s %s%s "%s"' % (
                             gcov_root, args.gcov, args.gcov_options, local_gcov_options, filepath),
@@ -419,6 +425,8 @@ def collect(args):
                     with open(gcov_path, mode='rb') as fobj:
                         source_file_line = fobj.readline().decode('utf-8', 'replace')
                         source_file_path = source_file_line.split(':')[-1].strip()
+                        gcov_file_path = source_file_path
+                        print('--> ' + source_file_path)
                         if not os.path.isabs(source_file_path):
                             if args.build_root:
                                 source_file_path = os.path.join(
@@ -436,6 +444,17 @@ def collect(args):
                                 source_file_path = os.path.abspath(
                                     os.path.join(the_root, source_file_path))
                         src_path = os.path.relpath(source_file_path, abs_root)
+                        print('-----------------------')
+                        print(src_path)
+                        print(source_file_path)
+                        print('pwd ' + os.getcwd())
+                        print('1.' + filepath)
+                        print('1.1 root:' + root)
+                        print('2.-' + gcov_path)
+                        print('3.-' + gcov_file_path)
+                        print('4. result: ' + os.path.join(gcov_path, gcov_file_path))
+                        print(abs_root)
+                        print('<----------------------')
                         if src_path.startswith(os.path.pardir + os.path.sep):
                             continue
                         if is_excluded_path(args, source_file_path):
@@ -444,15 +463,30 @@ def collect(args):
                         src_report = {}
                         src_report['name'] = posix_path(src_path)
                         discovered_files.add(src_path)
+                        if(not os.path.exists(source_file_path)):
+                            source_file_path = os.path.join(gcov_path, gcov_file_path)
+                        if(not os.path.exists(source_file_path)):
+                            source_file_path = source_file_path.replace(filepath, '..')
+                        if(not os.path.exists(source_file_path)):
+                            print('file not found ' + source_file_path)
+                            source_file_path = os.path.join(os.getcwd(), source_file_path)
+                        if(not os.path.exists(source_file_path)):
+                            source_file_path = os.path.join(root, gcov_file_path)
+                            print('final try :' + source_file_path)
+                        if(not os.path.exists(source_file_path)):
+                            print( 'cannot find -: ' + source_file_path)
+
                         with io.open(source_file_path, mode='rb') as src_file:
                             src_report['source_digest'] = hashlib.md5(src_file.read()).hexdigest()
+                        
 
                         src_report['coverage'] = parse_gcov_file(args, fobj, gcov_path)
                         if src_path in src_files:
                             src_files[src_path] = combine_reports(src_files[src_path], src_report)
                         else:
                             src_files[src_path] = src_report
-
+    print('.................')    
+    # print(', '.join(list(src_files.values())))
     report['source_files'] = list(src_files.values())
     # Also collects the source files that have no coverage reports.
     if not args.lcov_file:
