@@ -426,7 +426,7 @@ def collect(args):
                         source_file_line = fobj.readline().decode('utf-8', 'replace')
                         source_file_path = source_file_line.split(':')[-1].strip()
                         gcov_file_path = source_file_path
-                        print('--> ' + source_file_path)
+                        #print('--> ' + source_file_path)
                         if not os.path.isabs(source_file_path):
                             if args.build_root:
                                 source_file_path = os.path.join(
@@ -447,15 +447,16 @@ def collect(args):
                         print('-----------------------')
                         print(src_path)
                         print(source_file_path)
-                        print('pwd ' + os.getcwd())
-                        print('1.' + filepath)
-                        print('1.1 root:' + root)
-                        print('2.-' + gcov_path)
-                        print('3.-' + gcov_file_path)
-                        print('4. result: ' + os.path.join(gcov_path, gcov_file_path))
-                        print(abs_root)
+                        #print('pwd ' + os.getcwd())
+                        #print('1.' + filepath)
+                        #print('1.1 root:' + root)
+                        #print('2.-' + gcov_path)
+                        #print('3.-' + gcov_file_path)
+                        #print('4. result: ' + os.path.join(gcov_path, gcov_file_path))
+                        #print(abs_root)
                         print('<----------------------')
                         if src_path.startswith(os.path.pardir + os.path.sep):
+                            print('exclude ' + src_path)
                             continue
                         if is_excluded_path(args, source_file_path):
                             continue
