@@ -83,6 +83,9 @@ def create_args(params):
                              'line coverage count which is higher than max int'
                              'value supported by coveralls.')
 
+    parser.add_argument('--noallfiles',action='store_true',default=False,help='Do not process all file')
+    parser.add_argument('--source',action='store_true',default=False,help='Include source file content')
+
     return parser.parse_args(params)
 
 
@@ -478,8 +481,10 @@ def collect(args):
                             print( 'cannot find -: ' + source_file_path)
 
                         with io.open(source_file_path, mode='rb') as src_file:
-                            src_report['source_digest'] = hashlib.md5(src_file.read()).hexdigest()
-                        
+                           source_content = src_file.read() 
+                           src_report['source_digest'] = hashlib.md5(source_content).hexdigest()
+                           if(args.source):
+                               src_report['source'] = source_content.decode("utf-8")
 
                         src_report['coverage'] = parse_gcov_file(args, fobj, gcov_path)
                         if src_path in src_files:
@@ -490,7 +495,7 @@ def collect(args):
     # print(', '.join(list(src_files.values())))
     report['source_files'] = list(src_files.values())
     # Also collects the source files that have no coverage reports.
-    if not args.lcov_file:
+    if not args.lcov_file and not args.noallfiles:
         report['source_files'].extend(
             collect_non_report_files(args, discovered_files))
 
